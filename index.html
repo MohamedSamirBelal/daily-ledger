@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل اليومية - الإكسسوار</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+        }
+        .conditional-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            margin-bottom: 20px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            color: #e67e22;
+            font-weight: bold;
+        }
+        .success-msg {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>تسجيل يومية الإكسسوار</h2>
+    <form id="dailyForm">
+        
+        <!-- نوع المعاملة -->
+        <div class="form-group">
+            <label for="transactionType">نوع المعاملة:</label>
+            <select id="transactionType" required onchange="toggleTransactionFields()">
+                <option value="product">شراء منتج</option>
+                <option value="transfer">تحويل أو استلام</option>
+            </select>
+        </div>
+
+        <!-- حقول شراء المنتج -->
+        <div id="productSection" class="conditional-section">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label for="productName">اسم المنتج:</label>
+                <input type="text" id="productName" placeholder="مثال: دبدوب، ريحة...">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="productPrice">السعر:</label>
+                <input type="number" id="productPrice" placeholder="0">
+            </div>
+        </div>
+
+        <!-- حقول التحويل / الاستلام -->
+        <div id="transferSection" class="conditional-section" style="display: none;">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label for="transferAmount">قيمة التحويل / العملية:</label>
+                <input type="number" id="transferAmount" placeholder="0">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="commission">العمولة:</label>
+                <input type="number" id="commission" placeholder="0">
+            </div>
+        </div>
+
+        <!-- طريقة الدفع -->
+        <div class="form-group">
+            <label for="paymentMethod">طريقة الدفع:</label>
+            <select id="paymentMethod">
+                <option value="كاش">كاش</option>
+                <option value="تحويل">تحويل</option>
+            </select>
+        </div>
+
+        <!-- الخوارج والملاحظات -->
+        <div class="form-group">
+            <label for="notes">الخوارج / ملاحظات:</label>
+            <input type="text" id="notes" placeholder="أي مصروفات أو ملاحظات جانبية">
+        </div>
+
+        <button type="submit" id="submitBtn">حفظ وتسجيل</button>
+        <div id="loadingMsg" class="loading">جاري الإرسال...</div>
+        <div id="successMsg" class="success-msg">تم الحفظ بنجاح! ✓</div>
+    </form>
+</div>
+
+<script>
+    // تبديل الحقول بناءً على اختيار نوع المعاملة
+    function toggleTransactionFields() {
+        const type = document.getElementById('transactionType').value;
+        const productSec = document.getElementById('productSection');
+        const transferSec = document.getElementById('transferSection');
+
+        if (type === 'product') {
+            productSec.style.display = 'block';
+            transferSec.style.display = 'none';
+        } else {
+            productSec.style.display = 'none';
+            transferSec.style.display = 'block';
+        }
+    }
+
+    document.getElementById('dailyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingMsg = document.getElementById('loadingMsg');
+        const successMsg = document.getElementById('successMsg');
+
+        submitBtn.style.display = 'none';
+        loadingMsg.style.display = 'block';
+
+        const type = document.getElementById('transactionType').value;
+        
+        // تجهيز البيانات لإرسالها
+        const data = {
+            transactionType: type === 'product' ? 'شراء منتج' : 'تحويل أو استلام',
+            productName: type === 'product' ? document.getElementById('productName').value : 'تحويل',
+            price: type === 'product' ? document.getElementById('productPrice').value : document.getElementById('transferAmount').value,
+            commission: type === 'product' ? 0 : document.getElementById('commission').value,
+            paymentMethod: document.getElementById('paymentMethod').value,
+            notes: document.getElementById('notes').value
+        };
+
+        // ضع رابط Google Apps Script Web App الخاص بك هنا
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxUyarhbgOTw6vNXms4ZHvonu6CzJD7LrZEBfHamRgCI2mh7et5QTf_pFiCkgfamhU/exec';
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            loadingMsg.style.display = 'none';
+            successMsg.style.display = 'block';
+            document.getElementById('dailyForm').reset();
+            toggleTransactionFields();
+            
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+                submitBtn.style.display = 'block';
+            }, 3000);
+        })
+        .catch(error => {
+            console.error('Error!', error.message);
+            alert('حدث خطأ أثناء الإرسال، حاول مرة أخرى.');
+            loadingMsg.style.display = 'none';
+            submitBtn.style.display = 'block';
+        });
+    });
+</script>
+
+</body>
+</html>
